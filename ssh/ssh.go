@@ -1,9 +1,9 @@
 package ssh
 
 import (
-    "io"
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -25,10 +25,10 @@ type InfoSSH struct {
 
 func (self *InfoSSH) Cmd(cmd string, vv bool) {
 	defer self.Csession.Close()
-    if vv == true {
-	    self.Csession.Stdout = os.Stdout
-	    self.Csession.Stderr = os.Stderr
-    }
+	if vv == true {
+		self.Csession.Stdout = os.Stdout
+		self.Csession.Stderr = os.Stderr
+	}
 	self.Csession.Run(cmd)
 }
 
@@ -52,16 +52,16 @@ func (self *InfoSSH) Scp(src, dst string) {
 
 	rSrcFile := bufio.NewReader(srcFile)
 	rSrcFile.Peek(rSrcFile.Buffered())
-    
-    var bufLine []byte
+
+	var bufLine []byte
 	for {
 		buf, err := rSrcFile.ReadByte()
 		if err == io.EOF {
 			break
 		}
-        bufLine = append(bufLine, buf)
-    }
-		dstFile.Write(bufLine)
+		bufLine = append(bufLine, buf)
+	}
+	dstFile.Write(bufLine)
 }
 
 func (self *InfoSSH) Connect() error {
