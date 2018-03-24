@@ -1,12 +1,12 @@
-package  conf
+package conf
 
 import (
-    "os"
+	"encoding/json"
+	"io/ioutil"
 	"log"
-    "io/ioutil"
-    "encoding/json"
+	"os"
 
-    "github.com/tidwall/gjson"
+	"github.com/tidwall/gjson"
 )
 
 func init() {
@@ -21,21 +21,21 @@ type People struct {
 }
 
 func ReadConfig(group string) []People {
-    var people []People
+	var people []People
 
-    f, err := os.Open("conf/info.json")
-    defer f.Close()
-    if err != nil {
-        log.Fatal(err)
-    }
-   jsonByte, err := ioutil.ReadAll(f)
-    if err != nil {
-        log.Fatal(err)
-    }
-   info := gjson.Get(string(jsonByte), group)
-   err = json.Unmarshal([]byte(info.String()), &people)
-   if err != nil {
-       log.Fatal(err)
-   }
-   return people
+	f, err := os.Open("conf/info.json")
+	defer f.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	jsonByte, err := ioutil.ReadAll(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+	info := gjson.Get(string(jsonByte), group)
+	err = json.Unmarshal([]byte(info.String()), &people)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return people
 }

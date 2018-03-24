@@ -3,25 +3,25 @@ package main
 import (
 	"./conf"
 	"./ssh"
-    "runtime"
-    "sync"
+	"fmt"
 	"log"
-    "fmt"
 	"os"
+	"runtime"
+	"sync"
 
 	"github.com/urfave/cli"
 )
 
 func init() {
-    runtime.GOMAXPROCS(runtime.NumCPU())
-    log.SetFlags(log.Ltime | log.Lshortfile)
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	log.SetFlags(log.Ltime | log.Lshortfile)
 }
 
 var (
-    grep   string
-	cmd    string
-	files  string
-	dst    string
+	grep  string
+	cmd   string
+	files string
+	dst   string
 )
 
 func main() {
@@ -29,36 +29,36 @@ func main() {
 
 	InfoList := conf.ReadConfig(grep)
 
-    wg := sync.WaitGroup{}
-    wg.Add(len(InfoList))
-    
-    for _, info := range InfoList {
-	    conn := ssh.InfoSSH{
-		    User:     info.User,
-		    Password: info.Password,
-		    Host:     info.Host,
-		    Port:     info.Port,
-	    }
-	    err := conn.Connect()
-	    if err != nil {
-            fmt.Printf("\n \033[0;31m ==================== %v =======================  \033[0m\n", info.Host)
-		    fmt.Println("Warning ssh connection failed")
-            wg.Done()
-            continue
- 	    }
+	wg := sync.WaitGroup{}
+	wg.Add(len(InfoList))
 
-	switch {
-	case cmd != "":
-		go conn.Cmd(cmd, &wg)
-	case files != "":
-         go conn.Scp(files, dst, &wg)
-	case cmd != "" && files != "":
-		os.Exit(0)
-	default:
-		os.Exit(0)
-	    }
-    }
-    defer wg.Wait()
+	for _, info := range InfoList {
+		conn := ssh.InfoSSH{
+			User:     info.User,
+			Password: info.Password,
+			Host:     info.Host,
+			Port:     info.Port,
+		}
+		err := conn.Connect()
+		if err != nil {
+			fmt.Printf("\n \033[0;31m ==================== %v =======================  \033[0m\n", info.Host)
+			fmt.Println("Warning ssh connection failed")
+			wg.Done()
+			continue
+		}
+
+		switch {
+		case cmd != "":
+			go conn.Cmd(cmd, &wg)
+		case files != "":
+			go conn.Scp(files, dst, &wg)
+		case cmd != "" && files != "":
+			os.Exit(0)
+		default:
+			os.Exit(0)
+		}
+	}
+	defer wg.Wait()
 }
 
 func get_Args() {
