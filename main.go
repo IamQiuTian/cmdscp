@@ -42,7 +42,7 @@ func main() {
 		err := conn.Connect()
 		if err != nil {
 			fmt.Printf("\n \033[0;31m ==================== %v =======================  \033[0m\n", info.Host)
-			fmt.Println("Warning ssh connection failed")
+			fmt.Println(err)
 			wg.Done()
 			continue
 		}
