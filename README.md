@@ -1,7 +1,7 @@
 # cmdscp
 基于SSH协议的批量文件传输和命令执行工具
 
-# ./cmdscp -g demo2 -f test.txt -d "/home/t.txt"
+$ ./cmdscp -g demo2 -f test.txt -d "/home/t.txt"
 
   ==================== 139.129.212.98 =======================  
 Warning ssh connection failed
@@ -13,7 +13,7 @@ File sent successfully
 File sent successfully
 
 
-# ./cmdscp -g demo2 -c "id"        
+$ ./cmdscp -g demo2 -c "id"        
 
   ==================== 139.129.212.98 =======================  
 Warning ssh connection failed
