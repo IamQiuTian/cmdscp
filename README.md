@@ -2,7 +2,7 @@
 基于SSH协议的批量文件传输和命令执行工具
 
 $ ./cmdscp -g demo2 -f test.txt -d "/home/t.txt"
-
+``` Bash
   ==================== 139.129.212.98 =======================  
 Warning ssh connection failed
 
@@ -11,10 +11,10 @@ File sent successfully
 
   ==================== 139.129.237.40 ======================= 
 File sent successfully
-
+```
 
 $ ./cmdscp -g demo2 -c "id"        
-
+``` Bash
   ==================== 139.129.212.98 =======================  
 Warning ssh connection failed
 
@@ -23,3 +23,4 @@ uid=0(root) gid=0(root) groups=0(root)
 
   ==================== 139.129.237.40 ======================= 
 uid=0(root) gid=0(root) groups=0(root)
+```
