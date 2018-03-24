@@ -31,7 +31,7 @@ func main() {
 
 	wg := sync.WaitGroup{}
 	wg.Add(len(InfoList))
-
+ 
 	for _, info := range InfoList {
 		conn := ssh.InfoSSH{
 			User:     info.User,
