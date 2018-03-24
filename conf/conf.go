@@ -1,11 +1,12 @@
-package conf
+package  conf
 
 import (
-	"database/sql"
+    "os"
 	"log"
-	"strings"
+    "io/ioutil"
+    "encoding/json"
 
-	_ "github.com/mattn/go-sqlite3"
+    "github.com/tidwall/gjson"
 )
 
 func init() {
@@ -13,51 +14,28 @@ func init() {
 }
 
 type People struct {
-	ip       string
-	username string
-	password string
-	port     int
+	Host     string `json:"host"`
+	User     string `json:"user"`
+	Password string `json:"password"`
+	Port     int    `json:"port"`
 }
 
-func ConnectDB(driverName string, dbName string) *sql.DB {
-	db, err := sql.Open(driverName, dbName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err = db.Ping(); err != nil {
-		log.Fatal(err)
-	}
-	return db
-}
+func ReadConfig(group string) []People {
+    var people []People
 
-func Read(c *sql.DB, ip string) (InfoMap map[string]interface{}) {
-	InfoMap = make(map[string]interface{})
-	rows, err := c.Query("select * from demo")
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		p := new(People)
-		err := rows.Scan(&p.ip, &p.port, &p.username, &p.password)
-		if err != nil {
-			log.Fatal(err)
-		}
-		if ip != strings.Replace(p.ip, " ", "", -1) {
-			continue
-		}
-
-		InfoMap["ip"] = strings.Replace(p.ip, " ", "", -1)
-		InfoMap["port"] = p.port
-		InfoMap["username"] = strings.Replace(p.username, " ", "", -1)
-		InfoMap["password"] = strings.Replace(p.password, " ", "", -1)
-	}
-	return
-}
-
-func FindInfo(ip string) (InfoMap map[string]interface{}) {
-	c := ConnectDB("sqlite3", "conf/info.db")
-	InfoMap = Read(c, ip)
-	return
+    f, err := os.Open("conf/info.json")
+    defer f.Close()
+    if err != nil {
+        log.Fatal(err)
+    }
+   jsonByte, err := ioutil.ReadAll(f)
+    if err != nil {
+        log.Fatal(err)
+    }
+   info := gjson.Get(string(jsonByte), group)
+   err = json.Unmarshal([]byte(info.String()), &people)
+   if err != nil {
+       log.Fatal(err)
+   }
+   return people
 }

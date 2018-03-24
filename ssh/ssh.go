@@ -1,18 +1,22 @@
 package ssh
 
 import (
-	"bufio"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"os"
 	"path"
 	"time"
+    "sync"
+	"io/ioutil"
 
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 )
+
+func init() {
+    log.SetFlags(log.Ltime | log.Lshortfile)
+}
 
 type InfoSSH struct {
 	User     string
@@ -23,45 +27,44 @@ type InfoSSH struct {
 	Fsession *sftp.Client
 }
 
-func (self *InfoSSH) Cmd(cmd string, vv bool) {
+func (self *InfoSSH) Cmd(cmd string, wg *sync.WaitGroup) {
 	defer self.Csession.Close()
-	if vv == true {
-		self.Csession.Stdout = os.Stdout
-		self.Csession.Stderr = os.Stderr
-	}
+    defer wg.Done()
+    fmt.Printf("\n \033[1;32m ==================== %v ======================= \033[0m\n", self.Host)
+    self.Csession.Stdout = os.Stdout
+	self.Csession.Stderr = os.Stderr
 	self.Csession.Run(cmd)
 }
 
-func (self *InfoSSH) Scp(src, dst string) {
+func (self *InfoSSH) Scp(src, dst string, wg *sync.WaitGroup) {
+    var remoteFileName string
+
 	defer self.Csession.Close()
 	defer self.Fsession.Close()
-
-	srcFile, err := os.Open(src)
+    defer wg.Done()
+    
+    if f := path.Base(dst); f != ""  {
+        remoteFileName = path.Base(dst)
+    } else {
+        remoteFileName = path.Base(src)
+    }
+	dstFile, err := self.Fsession.Create(path.Join(path.Dir(dst), remoteFileName))
 	if err != nil {
-		log.Fatal(err)
-	}
-	defer srcFile.Close()
-
-	remoteFileName := path.Base(src)
-
-	dstFile, err := self.Fsession.Create(path.Join(dst, remoteFileName))
-	if err != nil {
-		log.Fatal(err)
-	}
+        fmt.Printf("\n \033[0;31m ==================== %v ======================= \033[0m\n", self.Host)
+	    fmt.Println(err)
+        return
+    }
 	defer dstFile.Close()
 
-	rSrcFile := bufio.NewReader(srcFile)
-	rSrcFile.Peek(rSrcFile.Buffered())
-
-	var bufLine []byte
-	for {
-		buf, err := rSrcFile.ReadByte()
-		if err == io.EOF {
-			break
-		}
-		bufLine = append(bufLine, buf)
+    fileByte, err := ioutil.ReadFile(src)
+	if err != nil {
+        fmt.Printf("\n \033[0;31m ==================== %v ======================= \033[0m\n", self.Host)
+	    fmt.Println(err)
+        return
 	}
-	dstFile.Write(bufLine)
+	dstFile.Write(fileByte)
+    fmt.Printf("\n \033[1;32m ==================== %v ======================= \033[0m\n", self.Host)
+    fmt.Println("File sent successfully")
 }
 
 func (self *InfoSSH) Connect() error {

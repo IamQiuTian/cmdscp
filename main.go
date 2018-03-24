@@ -3,69 +3,78 @@ package main
 import (
 	"./conf"
 	"./ssh"
+    "runtime"
+    "sync"
 	"log"
+    "fmt"
 	"os"
 
 	"github.com/urfave/cli"
 )
 
+func init() {
+    runtime.GOMAXPROCS(runtime.NumCPU())
+    log.SetFlags(log.Ltime | log.Lshortfile)
+}
+
 var (
-	target string
+    grep   string
 	cmd    string
-	show   string
 	files  string
 	dst    string
 )
 
 func main() {
 	get_Args()
-	InfoMap := conf.FindInfo(target)
 
-	conn := ssh.InfoSSH{
-		User:     InfoMap["username"].(string),
-		Password: InfoMap["password"].(string),
-		Host:     InfoMap["ip"].(string),
-		Port:     InfoMap["port"].(int),
-	}
-	err := conn.Connect()
-	if err != nil {
-		log.Fatal(err)
-	}
+	InfoList := conf.ReadConfig(grep)
+
+    wg := sync.WaitGroup{}
+    wg.Add(len(InfoList))
+    
+    for _, info := range InfoList {
+	    conn := ssh.InfoSSH{
+		    User:     info.User,
+		    Password: info.Password,
+		    Host:     info.Host,
+		    Port:     info.Port,
+	    }
+	    err := conn.Connect()
+	    if err != nil {
+            fmt.Printf("\n \033[0;31m ==================== %v =======================  \033[0m\n", info.Host)
+		    fmt.Println("Warning ssh connection failed")
+            wg.Done()
+            continue
+ 	    }
 
 	switch {
-	case cmd != "" && show == "false":
-		conn.Cmd(cmd, false)
-	case cmd != "" && show != "false":
-		conn.Cmd(cmd, true)
+	case cmd != "":
+		go conn.Cmd(cmd, &wg)
 	case files != "":
-		conn.Scp(files, dst)
+         go conn.Scp(files, dst, &wg)
 	case cmd != "" && files != "":
 		os.Exit(0)
 	default:
 		os.Exit(0)
-	}
+	    }
+    }
+    defer wg.Wait()
 }
 
 func get_Args() {
 	app := cli.NewApp()
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:        "target,t",
+			Name:        "grep,g",
 			Value:       "",
-			Usage:       "Input ip",
-			Destination: &target,
+			Usage:       "Input ip grep",
+			Destination: &grep,
 		},
 		cli.StringFlag{
 			Name:        "cmd,c",
 			Value:       "",
 			Usage:       "Input command",
 			Destination: &cmd,
-		},
-		cli.StringFlag{
-			Name:        "info,show",
-			Value:       "false",
-			Usage:       "Print command result",
-			Destination: &show,
 		},
 		cli.StringFlag{
 			Name:        "file,f",
@@ -81,7 +90,7 @@ func get_Args() {
 		},
 	}
 	app.Action = func(c *cli.Context) error {
-		if c.String("target") == "" {
+		if c.String("grep") == "" {
 			cli.ShowSubcommandHelp(c)
 			os.Exit(0)
 		}
