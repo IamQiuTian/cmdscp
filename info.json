@@ -1,10 +1,10 @@
 {
     "demo1":[
         {
-            "host":"unbooks.com",
+            "host":"x.x.x.x",
             "port":22,
             "user":"root",
-            "password":"Edaozi1225"
+            "password":"xxxxxx"
         }
     ],
     "demo2":[
