@@ -22,12 +22,13 @@ var (
 	cmd   string
 	files string
 	dst   string
+    pwdfile string
 )
 
 func main() {
 	get_Args()
 
-	InfoList := conf.ReadConfig(grep)
+	InfoList := conf.ReadConfig(pwdfile, grep)
 
 	wg := sync.WaitGroup{}
 	wg.Add(len(InfoList))
@@ -88,9 +89,15 @@ func get_Args() {
 			Usage:       "Input target file path",
 			Destination: &dst,
 		},
+		cli.StringFlag{
+			Name:        "pwdfile,p",
+			Value:       "",
+			Usage:       "Input passwd file path",
+			Destination: &pwdfile,
+		},
 	}
 	app.Action = func(c *cli.Context) error {
-		if c.String("grep") == "" {
+		if c.String("grep") == "" || c.String("pwdfile") == "" {
 			cli.ShowSubcommandHelp(c)
 			os.Exit(0)
 		}

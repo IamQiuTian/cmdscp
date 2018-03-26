@@ -20,10 +20,10 @@ type People struct {
 	Port     int    `json:"port"`
 }
 
-func ReadConfig(group string) []People {
+func ReadConfig(pwdfile, group string) []People {
 	var people []People
 
-	f, err := os.Open("conf/info.json")
+	f, err := os.Open(pwdfile)
 	defer f.Close()
 	if err != nil {
 		log.Fatal(err)
