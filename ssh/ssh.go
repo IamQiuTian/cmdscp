@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"path"
+	"strings"
 	"sync"
 	"time"
 
@@ -43,11 +44,11 @@ func (self *InfoSSH) Scp(src, dst string, wg *sync.WaitGroup) {
 	defer self.Fsession.Close()
 	defer wg.Done()
 
-	if f := path.Base(dst); f != "" {
-		remoteFileName = path.Base(dst)
-	} else {
-		remoteFileName = path.Base(src)
+	if strings.HasSuffix(dst, "/") == false {
+		dst = dst + "/"
 	}
+
+	remoteFileName = path.Base(src)
 	dstFile, err := self.Fsession.Create(path.Join(path.Dir(dst), remoteFileName))
 	if err != nil {
 		fmt.Printf("\n \033[0;31m ==================== %v ======================= \033[0m\n", self.Host)

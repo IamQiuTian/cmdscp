@@ -1,7 +1,7 @@
 # cmdscp
 基于SSH协议的批量文件传输和命令执行工具
 
-$ ./cmdscp -g demo2 -f test.txt -d "/home/t.txt" -p info.json 
+$ ./cmdscp -g demo2 -f test.txt -d "/home" -p info.json 
 ``` Bash
   ==================== 191.168.1.1 =======================  
 Warning ssh connection failed
