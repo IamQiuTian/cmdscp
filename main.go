@@ -18,21 +18,23 @@ func init() {
 }
 
 var (
-	grep  string
-	cmd   string
-	files string
-	dst   string
-    pwdfile string
+	grep    string
+	cmd     string
+	files   string
+	dst     string
+	pwdfile string
 )
 
 func main() {
 	get_Args()
-
+	if pwdfile == "" {
+		os.Exit(0)
+	}
 	InfoList := conf.ReadConfig(pwdfile, grep)
 
 	wg := sync.WaitGroup{}
 	wg.Add(len(InfoList))
- 
+
 	for _, info := range InfoList {
 		conn := ssh.InfoSSH{
 			User:     info.User,
