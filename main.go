@@ -70,7 +70,7 @@ func get_Args() {
 		cli.StringFlag{
 			Name:        "grep,g",
 			Value:       "",
-			Usage:       "Input ip grep",
+			Usage:       "Input host group",
 			Destination: &grep,
 		},
 		cli.StringFlag{
