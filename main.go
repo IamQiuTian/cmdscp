@@ -18,23 +18,20 @@ func init() {
 }
 
 var (
-	grep    string
-	cmd     string
-	files   string
-	dst     string
-	pwdfile string
+	grep  string
+	cmd   string
+	files string
+	dst   string
+    pwdfile string
 )
 
 func main() {
 	get_Args()
-	if pwdfile == "" {
-		os.Exit(0)
-	}
 	InfoList := conf.ReadConfig(pwdfile, grep)
 
 	wg := sync.WaitGroup{}
 	wg.Add(len(InfoList))
-
+ 
 	for _, info := range InfoList {
 		conn := ssh.InfoSSH{
 			User:     info.User,
@@ -66,11 +63,16 @@ func main() {
 
 func get_Args() {
 	app := cli.NewApp()
+    app.Name = "cmdscp"
+    app.Version = "v0.0.1"
+    app.Usage = "shell and send file"
+    app.Writer = os.Stdout
+    app.ErrWriter = os.Stderr
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "grep,g",
-			Value:       "",
-			Usage:       "Input host group",
+			Value:       "false",
+			Usage:       "Input ip grep",
 			Destination: &grep,
 		},
 		cli.StringFlag{
@@ -93,17 +95,16 @@ func get_Args() {
 		},
 		cli.StringFlag{
 			Name:        "pwdfile,p",
-			Value:       "",
+			Value:       "false",
 			Usage:       "Input passwd file path",
 			Destination: &pwdfile,
 		},
 	}
-	app.Action = func(c *cli.Context) error {
-		if c.String("grep") == "" || c.String("pwdfile") == "" {
-			cli.ShowSubcommandHelp(c)
+	app.Action = func(c *cli.Context) {
+		if c.String("grep") == "false" ||  c.String("pwdfile") == "false" {
+			cli.ShowAppHelp(c)
 			os.Exit(0)
 		}
-		return nil
 	}
 	app.Run(os.Args)
 }
