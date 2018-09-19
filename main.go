@@ -95,16 +95,23 @@ func get_Args() {
 		},
 		cli.StringFlag{
 			Name:        "pwdfile,p",
-			Value:       "false",
+			Value:       ".info.json",
 			Usage:       "Input passwd file path",
 			Destination: &pwdfile,
 		},
 	}
 	app.Action = func(c *cli.Context) {
-		if c.String("grep") == "false" ||  c.String("pwdfile") == "false" {
+		if c.String("grep") == "false" {
 			cli.ShowAppHelp(c)
 			os.Exit(0)
 		}
+
+	_, err := os.Stat(c.String("pwdfile"))
+	if os.IsNotExist(err) {
+        fmt.Println("Password file is none!")
+		os.Exit(0)
 	}
+}
+
 	app.Run(os.Args)
 }
