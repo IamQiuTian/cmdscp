@@ -18,11 +18,11 @@ func init() {
 }
 
 var (
-	grep  string
-	cmd   string
-	files string
-	dst   string
-    pwdfile string
+	grep    string
+	cmd     string
+	files   string
+	dst     string
+	pwdfile string
 )
 
 func main() {
@@ -31,13 +31,14 @@ func main() {
 
 	wg := sync.WaitGroup{}
 	wg.Add(len(InfoList))
- 
+
 	for _, info := range InfoList {
 		conn := ssh.InfoSSH{
-			User:     info.User,
-			Password: info.Password,
-			Host:     info.Host,
-			Port:     info.Port,
+			User:      info.User,
+			Password:  info.Password,
+			PublicKey: info.PublicKey,
+			Host:      info.Host,
+			Port:      info.Port,
 		}
 		err := conn.Connect()
 		if err != nil {
@@ -63,11 +64,11 @@ func main() {
 
 func get_Args() {
 	app := cli.NewApp()
-    app.Name = "cmdscp"
-    app.Version = "v0.0.1"
-    app.Usage = "shell and send file"
-    app.Writer = os.Stdout
-    app.ErrWriter = os.Stderr
+	app.Name = "cmdscp"
+	app.Version = "v0.0.1"
+	app.Usage = "shell and send file"
+	app.Writer = os.Stdout
+	app.ErrWriter = os.Stderr
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "grep,g",
@@ -106,12 +107,12 @@ func get_Args() {
 			os.Exit(0)
 		}
 
-	_, err := os.Stat(c.String("pwdfile"))
-	if os.IsNotExist(err) {
-        fmt.Println("Password file is none!")
-		os.Exit(0)
+		_, err := os.Stat(c.String("pwdfile"))
+		if os.IsNotExist(err) {
+			fmt.Println("Password file is none!")
+			os.Exit(0)
+		}
 	}
-}
 
 	app.Run(os.Args)
 }

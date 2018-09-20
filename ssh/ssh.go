@@ -20,12 +20,13 @@ func init() {
 }
 
 type InfoSSH struct {
-	User     string
-	Password string
-	Host     string
-	Port     int
-	Csession *ssh.Session
-	Fsession *sftp.Client
+	User      string
+	Password  string
+	PublicKey string
+	Host      string
+	Port      int
+	Csession  *ssh.Session
+	Fsession  *sftp.Client
 }
 
 func (self *InfoSSH) Cmd(cmd string, wg *sync.WaitGroup) {
@@ -79,7 +80,12 @@ func (self *InfoSSH) Connect() error {
 		err          error
 	)
 	auth = make([]ssh.AuthMethod, 0)
-	auth = append(auth, ssh.Password(self.Password))
+
+	if self.PublicKey != "no" {
+		auth = append(auth, ssh.PublicKeys(self.Publickey()))
+	} else {
+		auth = append(auth, ssh.Password(self.Password))
+	}
 
 	clientConfig = &ssh.ClientConfig{
 		User:    self.User,
@@ -106,4 +112,18 @@ func (self *InfoSSH) Connect() error {
 	self.Csession = csession
 	self.Fsession = fsession
 	return nil
+}
+
+func (self *InfoSSH) Publickey() ssh.Signer {
+	key, err := ioutil.ReadFile(self.PublicKey)
+	if err != nil {
+		log.Fatalf("unable to read private key: %v", err)
+	}
+
+	signer, err := ssh.ParsePrivateKey(key)
+	if err != nil {
+		log.Fatalf("unable to parse private key: %v", err)
+	}
+
+	return signer
 }
