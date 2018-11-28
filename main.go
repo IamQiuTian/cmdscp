@@ -5,14 +5,12 @@ import (
 	"./ssh"
 	"fmt"
 	"log"
-	"os"
 	"runtime"
 	"sync"
-
-	"github.com/urfave/cli"
 )
 
 func init() {
+    GetArgs()
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	log.SetFlags(log.Ltime | log.Lshortfile)
 }
@@ -26,22 +24,20 @@ var (
 )
 
 func main() {
-	get_Args()
 	InfoList := conf.ReadConfig(pwdfile, grep)
 
 	wg := sync.WaitGroup{}
 	wg.Add(len(InfoList))
 
 	for _, info := range InfoList {
-		conn := ssh.InfoSSH{
+		conn := &ssh.InfoSSH{
 			User:      info.User,
 			Password:  info.Password,
 			PublicKey: info.PublicKey,
 			Host:      info.Host,
 			Port:      info.Port,
 		}
-		err := conn.Connect()
-		if err != nil {
+        if err := conn.Connect(); err != nil {
 			fmt.Printf("\n \033[0;31m ==================== %v =======================  \033[0m\n", info.Host)
 			fmt.Println(err)
 			wg.Done()
@@ -51,68 +47,13 @@ func main() {
 		switch {
 		case cmd != "":
 			go conn.Cmd(cmd, &wg)
-		case files != "":
+		case files != "" && dst != "":
 			go conn.Scp(files, dst, &wg)
 		case cmd != "" && files != "":
-			os.Exit(0)
+			log.Fatal("Parameter error")
 		default:
-			os.Exit(0)
+			log.Fatal("Parameter error")
 		}
 	}
 	defer wg.Wait()
-}
-
-func get_Args() {
-	app := cli.NewApp()
-	app.Name = "cmdscp"
-	app.Version = "v0.0.1"
-	app.Usage = "shell and send file"
-	app.Writer = os.Stdout
-	app.ErrWriter = os.Stderr
-	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:        "grep,g",
-			Value:       "false",
-			Usage:       "Input ip grep",
-			Destination: &grep,
-		},
-		cli.StringFlag{
-			Name:        "cmd,c",
-			Value:       "",
-			Usage:       "Input command",
-			Destination: &cmd,
-		},
-		cli.StringFlag{
-			Name:        "file,f",
-			Value:       "",
-			Usage:       "Input source file path",
-			Destination: &files,
-		},
-		cli.StringFlag{
-			Name:        "dst,d",
-			Value:       "",
-			Usage:       "Input target file path",
-			Destination: &dst,
-		},
-		cli.StringFlag{
-			Name:        "pwdfile,p",
-			Value:       ".info.json",
-			Usage:       "Input passwd file path",
-			Destination: &pwdfile,
-		},
-	}
-	app.Action = func(c *cli.Context) {
-		if c.String("grep") == "false" {
-			cli.ShowAppHelp(c)
-			os.Exit(0)
-		}
-
-		_, err := os.Stat(c.String("pwdfile"))
-		if os.IsNotExist(err) {
-			fmt.Println("Password file is none!")
-			os.Exit(0)
-		}
-	}
-
-	app.Run(os.Args)
 }
