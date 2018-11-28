@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-    GetArgs()
+	GetArgs()
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	log.SetFlags(log.Ltime | log.Lshortfile)
 }
@@ -37,7 +37,7 @@ func main() {
 			Host:      info.Host,
 			Port:      info.Port,
 		}
-        if err := conn.Connect(); err != nil {
+		if err := conn.Connect(); err != nil {
 			fmt.Printf("\n \033[0;31m ==================== %v =======================  \033[0m\n", info.Host)
 			fmt.Println(err)
 			wg.Done()
