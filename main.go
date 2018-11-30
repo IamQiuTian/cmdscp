@@ -3,18 +3,18 @@ package main
 import (
 	"./conf"
 	"./ssh"
+	"flag"
 	"fmt"
 	"log"
-    "flag"
 	"sync"
 )
 
 var (
-    Group   *string = flag.String("g", "", "group name")
-    Cmd     *string = flag.String("c", "", "command")
-    Files   *string = flag.String("f", "", "source file")
-    Dst     *string = flag.String("d", "", "target  address")
-    Pwdfile *string = flag.String("p", ".info.json", "Certification documents")
+	Group   *string = flag.String("g", "", "group name")
+	Cmd     *string = flag.String("c", "", "command")
+	Files   *string = flag.String("f", "", "source file")
+	Dst     *string = flag.String("d", "", "target  address")
+	Pwdfile *string = flag.String("p", ".info.json", "Certification documents")
 )
 
 func init() {
@@ -22,11 +22,11 @@ func init() {
 }
 
 func main() {
-    flag.Parse()
-    if *Group == "" {
-        flag.Usage()
-        return
-    }
+	flag.Parse()
+	if *Group == "" {
+		flag.Usage()
+		return
+	}
 	InfoList := conf.ReadConfig(*Pwdfile, *Group)
 
 	wg := sync.WaitGroup{}
@@ -54,10 +54,10 @@ func main() {
 			go conn.Scp(*Files, *Dst, &wg)
 		case *Cmd != "" && *Files != "":
 			flag.Usage()
-            return
+			return
 		default:
 			flag.Usage()
-            return
+			return
 		}
 	}
 	defer wg.Wait()
