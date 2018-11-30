@@ -10,11 +10,11 @@ import (
 )
 
 var (
-	Group   *string = flag.String("g", "", "group name")
-	Cmd     *string = flag.String("c", "", "command")
-	Files   *string = flag.String("f", "", "source file")
-	Dst     *string = flag.String("d", "", "target  address")
-	Pwdfile *string = flag.String("p", ".info.json", "Certification documents")
+	group   *string = flag.String("g", "", "group name")
+	cmd     *string = flag.String("c", "", "command")
+	files   *string = flag.String("f", "", "source file")
+	dst     *string = flag.String("d", "", "target  address")
+	pwdfile *string = flag.String("p", ".info.json", "Certification documents")
 )
 
 func init() {
@@ -23,11 +23,11 @@ func init() {
 
 func main() {
 	flag.Parse()
-	if *Group == "" {
+	if *group == "" {
 		flag.Usage()
 		return
 	}
-	InfoList := conf.ReadConfig(*Pwdfile, *Group)
+	InfoList := conf.ReadConfig(*pwdfile, *group)
 
 	wg := sync.WaitGroup{}
 	wg.Add(len(InfoList))
@@ -48,11 +48,11 @@ func main() {
 		}
 
 		switch {
-		case *Cmd != "":
-			go conn.Cmd(*Cmd, &wg)
-		case *Files != "" && *Dst != "":
-			go conn.Scp(*Files, *Dst, &wg)
-		case *Cmd != "" && *Files != "":
+		case *cmd != "":
+			go conn.Cmd(*cmd, &wg)
+		case *files != "" && *dst != "":
+			go conn.Scp(*files, *dst, &wg)
+		case *cmd != "" && *files != "":
 			flag.Usage()
 			return
 		default:
