@@ -5,26 +5,29 @@ import (
 	"./ssh"
 	"fmt"
 	"log"
-	"runtime"
+    "flag"
 	"sync"
 )
 
+var (
+    Group   *string = flag.String("g", "", "group name")
+    Cmd     *string = flag.String("c", "", "command")
+    Files   *string = flag.String("f", "", "source file")
+    Dst     *string = flag.String("d", "", "target  address")
+    Pwdfile *string = flag.String("p", ".info.json", "Certification documents")
+)
+
 func init() {
-	GetArgs()
-	runtime.GOMAXPROCS(runtime.NumCPU())
 	log.SetFlags(log.Ltime | log.Lshortfile)
 }
 
-var (
-	grep    string
-	cmd     string
-	files   string
-	dst     string
-	pwdfile string
-)
-
 func main() {
-	InfoList := conf.ReadConfig(pwdfile, grep)
+    flag.Parse()
+    if *Group == "" {
+        flag.Usage()
+        return
+    }
+	InfoList := conf.ReadConfig(*Pwdfile, *Group)
 
 	wg := sync.WaitGroup{}
 	wg.Add(len(InfoList))
@@ -45,14 +48,16 @@ func main() {
 		}
 
 		switch {
-		case cmd != "":
-			go conn.Cmd(cmd, &wg)
-		case files != "" && dst != "":
-			go conn.Scp(files, dst, &wg)
-		case cmd != "" && files != "":
-			log.Fatal("Parameter error")
+		case *Cmd != "":
+			go conn.Cmd(*Cmd, &wg)
+		case *Files != "" && *Dst != "":
+			go conn.Scp(*Files, *Dst, &wg)
+		case *Cmd != "" && *Files != "":
+			flag.Usage()
+            return
 		default:
-			log.Fatal("Parameter error")
+			flag.Usage()
+            return
 		}
 	}
 	defer wg.Wait()
