@@ -43,7 +43,7 @@ func main() {
 			fmt.Println(err)
 			continue
 		}
-        wg.Add(1)
+		wg.Add(1)
 
 		switch {
 		case *cmd != "":
