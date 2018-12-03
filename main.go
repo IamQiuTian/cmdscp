@@ -30,8 +30,6 @@ func main() {
 	InfoList := conf.ReadConfig(*pwdfile, *group)
 
 	wg := sync.WaitGroup{}
-	wg.Add(len(InfoList))
-
 	for _, info := range InfoList {
 		conn := &ssh.InfoSSH{
 			User:      info.User,
@@ -43,9 +41,9 @@ func main() {
 		if err := conn.Connect(); err != nil {
 			fmt.Printf("\n \033[0;31m ==================== %v =======================  \033[0m\n", info.Host)
 			fmt.Println(err)
-			wg.Done()
 			continue
 		}
+        wg.Add(1)
 
 		switch {
 		case *cmd != "":
