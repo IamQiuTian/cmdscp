@@ -14,7 +14,7 @@ var (
 	cmd     *string = flag.String("c", "", "command")
 	files   *string = flag.String("f", "", "source file")
 	dst     *string = flag.String("d", "", "target  address")
-	pwdfile *string = flag.String("p", ".info.json", "Certification documents")
+	pwdfile *string = flag.String("p", ".auth.cfg", "Certification documents")
 )
 
 func init() {
