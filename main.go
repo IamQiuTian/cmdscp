@@ -1,8 +1,8 @@
 package main
 
 import (
-	"cmdscp/conf"
-	"cmdscp/ssh"
+	"./conf"
+	"./ssh"
 	"flag"
 	"fmt"
 	"log"
