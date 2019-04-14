@@ -8,7 +8,6 @@ import (
 	"os"
 	"path"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/pkg/sftp"
@@ -29,21 +28,19 @@ type InfoSSH struct {
 	Fsession  *sftp.Client
 }
 
-func (self *InfoSSH) Cmd(cmd string, wg *sync.WaitGroup) {
+func (self *InfoSSH) Cmd(cmd string) {
 	defer self.Csession.Close()
-	defer wg.Done()
 	fmt.Printf("\n \033[1;32m ==================== %v ======================= \033[0m\n", self.Host)
 	self.Csession.Stdout = os.Stdout
 	self.Csession.Stderr = os.Stderr
 	self.Csession.Run(cmd)
 }
 
-func (self *InfoSSH) Scp(src, dst string, wg *sync.WaitGroup) {
+func (self *InfoSSH) Scp(src, dst string) {
 	var remoteFileName string
 
 	defer self.Csession.Close()
 	defer self.Fsession.Close()
-	defer wg.Done()
 
 	if strings.HasSuffix(dst, "/") == false {
 		dst = dst + "/"
@@ -79,8 +76,6 @@ func (self *InfoSSH) Connect() error {
 		csession     *ssh.Session
 		err          error
 	)
-	auth = make([]ssh.AuthMethod, 0)
-
 	if self.PublicKey != "no" {
 		auth = append(auth, ssh.PublicKeys(self.Publickey()))
 	} else {

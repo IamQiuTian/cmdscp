@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"sync"
 )
 
 var (
@@ -29,7 +28,6 @@ func main() {
 	}
 	InfoList := conf.ReadConfig(*pwdfile, *group)
 
-	wg := sync.WaitGroup{}
 	for _, info := range InfoList {
 		conn := &ssh.InfoSSH{
 			User:      info.User,
@@ -43,13 +41,12 @@ func main() {
 			fmt.Println(err)
 			continue
 		}
-		wg.Add(1)
 
 		switch {
 		case *cmd != "":
-			go conn.Cmd(*cmd, &wg)
+			conn.Cmd(*cmd)
 		case *files != "" && *dst != "":
-			go conn.Scp(*files, *dst, &wg)
+			conn.Scp(*files, *dst)
 		case *cmd != "" && *files != "":
 			flag.Usage()
 			return
@@ -58,5 +55,4 @@ func main() {
 			return
 		}
 	}
-	defer wg.Wait()
 }
